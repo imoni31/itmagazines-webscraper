@@ -19,6 +19,9 @@ class ItMagazineType(Enum):
     # CQ出版
     INTERFACE = 11
     TRANGISTOR_GIJUTSU = 12
+    # 日経
+    NIKKEI_SOFTWARE = 21
+    NIKKEI_LINUX = 22
 
 @dataclass
 class ItMagazineTopoutlineData:
@@ -244,6 +247,92 @@ def __scrape_trangistor_gijutsu() -> ItMagazineData:
         )
     return magazine_data
 
+def __scrape_nikkei_software():
+    _url = 'https://info.nikkeibp.co.jp/media/NSW/'
+    magazine_data = ItMagazineData(name='日経ソフトウエア', url=_url)
+
+    soup = __get_soup(_url)
+    tag_salesinfo1 = soup.find('div', class_='articleBody')
+    if tag_salesinfo1 is not None:
+        tag_salesinfo1 = tag_salesinfo1.find('div', class_='cover-txt')
+    if tag_salesinfo1 is not None:
+        _number = tag_salesinfo1.find('p', class_='Title')
+        magazine_data.number\
+            = _number.get_text(strip=True).replace('最新号', '') if _number is not None else ''
+        _release_date = tag_salesinfo1.find(string=re.compile('発売日'))
+        magazine_data.release_date\
+            = _release_date.get_text(strip=True) if _release_date is not None else ''
+        _price = tag_salesinfo1.find(string=re.compile('価格'))
+        magazine_data.price = _price.get_text(strip=True) if _price is not None else ''
+
+        for tag_b in tag_salesinfo1.find_all('b', string='【特集】'):
+            magazine_data.top_outlines.append(
+                ItMagazineTopoutlineData(
+                    title=tag_b.parent.get_text(strip=True)
+                )
+            )
+
+        _store_link = tag_salesinfo1.find('a', href=re.compile('amazon'))
+        if _store_link is not None:
+            magazine_data.store_links.append(
+                ItMagazineStoreLink(
+                    name='Amazon',
+                    link=_store_link.get('href')
+                )
+            )
+        _store_link = tag_salesinfo1.find('a', href=re.compile('books.rakuten'))
+        if _store_link is not None:
+            magazine_data.store_links.append(
+                ItMagazineStoreLink(
+                    name='Rakutenブックス',
+                    link=_store_link.get('href')
+                )
+            )
+    return magazine_data
+
+def __scrape_nikkei_linux():
+    _url = 'https://info.nikkeibp.co.jp/media/LIN/'
+    magazine_data = ItMagazineData(name='日経Linux', url=_url)
+
+    soup = __get_soup(_url)
+    tag_salesinfo1 = soup.find('div', class_='articleBody')
+    if tag_salesinfo1 is not None:
+        tag_salesinfo1 = tag_salesinfo1.find('div', class_='cover-txt')
+    if tag_salesinfo1 is not None:
+        _number = tag_salesinfo1.find('p', class_='Title')
+        magazine_data.number\
+            = _number.get_text(strip=True).replace('最新号', '') if _number is not None else ''
+        _release_date = tag_salesinfo1.find(string=re.compile('発売日'))
+        magazine_data.release_date\
+            = _release_date.get_text(strip=True) if _release_date is not None else ''
+        _price = tag_salesinfo1.find(string=re.compile('価格'))
+        magazine_data.price = _price.get_text(strip=True) if _price is not None else ''
+
+        for tag_b in tag_salesinfo1.find_all('b', string=re.compile('【特集')):
+            magazine_data.top_outlines.append(
+                ItMagazineTopoutlineData(
+                    title=tag_b.parent.get_text(strip=True)
+                )
+            )
+
+        _store_link = tag_salesinfo1.find('a', href=re.compile('amazon'))
+        if _store_link is not None:
+            magazine_data.store_links.append(
+                ItMagazineStoreLink(
+                    name='Amazon',
+                    link=_store_link.get('href')
+                )
+            )
+        _store_link = tag_salesinfo1.find('a', href=re.compile('books.rakuten'))
+        if _store_link is not None:
+            magazine_data.store_links.append(
+                ItMagazineStoreLink(
+                    name='Rakutenブックス',
+                    link=_store_link.get('href')
+                )
+            )
+    return magazine_data
+
 def scrape_magazine(magazine_type: ItMagazineType) -> ItMagazineData:
     '''
     run web scraping
@@ -256,6 +345,10 @@ def scrape_magazine(magazine_type: ItMagazineType) -> ItMagazineData:
         return __scrape_interface()
     if magazine_type == ItMagazineType.TRANGISTOR_GIJUTSU:
         return __scrape_trangistor_gijutsu()
+    if magazine_type == ItMagazineType.NIKKEI_SOFTWARE:
+        return __scrape_nikkei_software()
+    if magazine_type == ItMagazineType.NIKKEI_LINUX:
+        return __scrape_nikkei_linux()
     return None
 
 if __name__ == '__main__':
@@ -263,3 +356,5 @@ if __name__ == '__main__':
     print(scrape_magazine(ItMagazineType.WEB_DB_PRESS).get_json())
     print(scrape_magazine(ItMagazineType.INTERFACE).get_json())
     print(scrape_magazine(ItMagazineType.TRANGISTOR_GIJUTSU).get_json())
+    print(scrape_magazine(ItMagazineType.NIKKEI_SOFTWARE).get_json())
+    print(scrape_magazine(ItMagazineType.NIKKEI_LINUX).get_json())
