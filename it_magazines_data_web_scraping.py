@@ -1,5 +1,5 @@
 '''
-it magazines web scraping
+IT-Magazines web scraping
 '''
 
 import json
@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup, Tag
 
 class ItMagazineType(Enum):
     '''
-    magazine type
+    IT-Magazine type
     '''
     # 技術評論社
     SOFTWARE_DESIGN = 1
@@ -26,7 +26,7 @@ class ItMagazineType(Enum):
 @dataclass
 class ItMagazineTopoutlineData:
     '''
-    magazine top-outline data class
+    IT-Magazine top-outline data class
     '''
     category: str = ''
     title: str = ''
@@ -35,7 +35,7 @@ class ItMagazineTopoutlineData:
 @dataclass
 class ItMagazineStoreLink:
     '''
-    magazine store-link data class
+    IT-Magazine store-link data class
     '''
     name: str = ''
     link: str = ''
@@ -43,7 +43,7 @@ class ItMagazineStoreLink:
 @dataclass
 class ItMagazineData:
     '''
-    magazine data class
+    IT-Magazine data class
     '''
     name: str
     number: str = ''
