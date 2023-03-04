@@ -30,6 +30,14 @@ class ItMagazineTopoutlineData:
     catch: str = ''
 
 @dataclass
+class ItMagazineStoreLink:
+    '''
+    magazine store-link data class
+    '''
+    name: str = ''
+    link: str = ''
+
+@dataclass
 class ItMagazineData:
     '''
     magazine data class
@@ -38,7 +46,9 @@ class ItMagazineData:
     number: str = ''
     price: str = ''
     release_date: str = ''
+    url: str = ''
     top_outlines: list[ItMagazineTopoutlineData] = field(default_factory=list)
+    store_links: list[ItMagazineStoreLink] = field(default_factory=list)
 
     def get_dict(self):
         '''
@@ -60,9 +70,10 @@ def __get_soup(url: str) -> BeautifulSoup:
     return BeautifulSoup(html.content, 'html.parser')
 
 def __scrape_software_design():
-    magazine_data = ItMagazineData(name='Software Design')
+    _url = 'http://gihyo.jp/magazine/SD'
+    magazine_data = ItMagazineData(name='Software Design', url=_url)
 
-    soup = __get_soup('http://gihyo.jp/magazine/SD')
+    soup = __get_soup(_url)
     tag_salesinfo1 = soup.find('div', id='newPublishedInfo')
     tag_salesinfo2: Tag = None
     if tag_salesinfo1 is not None:
@@ -90,12 +101,24 @@ def __scrape_software_design():
                     catch=_catch.get_text(strip=True) if _catch is not None else ''
                 )
             )
+
+    tag_storelink = soup.find('dl', class_='storeLink01')
+    if tag_storelink is not None:
+        for tag_li in tag_storelink.find_all('li'):
+            _store_link = tag_li.find('a')
+            magazine_data.store_links.append(
+                ItMagazineStoreLink(
+                    name=_store_link.get_text(strip=True) if _store_link is not None else '',
+                    link=_store_link.get('href') if _store_link is not None else ''
+                )
+            )
     return magazine_data
 
 def __scrape_web_db_press() -> ItMagazineData:
-    magazine_data = ItMagazineData(name='WEB+DB PRESS')
+    _url = 'https://gihyo.jp/magazine/wdpress'
+    magazine_data = ItMagazineData(name='WEB+DB PRESS', url=_url)
 
-    soup = __get_soup('https://gihyo.jp/magazine/wdpress')
+    soup = __get_soup(_url)
     tag_salesinfo1 = soup.find('div', id='newPublishedInfo')
     tag_salesinfo2: Tag = None
     if tag_salesinfo1 is not None:
@@ -123,6 +146,17 @@ def __scrape_web_db_press() -> ItMagazineData:
                     catch=_catch.get_text(strip=True) if _catch is not None else ''
                 )
             )
+
+    tag_storelink = soup.find('dl', class_='storeLink01')
+    if tag_storelink is not None:
+        for tag_li in tag_storelink.find_all('li'):
+            _store_link = tag_li.find('a')
+            magazine_data.store_links.append(
+                ItMagazineStoreLink(
+                    name=_store_link.get_text(strip=True) if _store_link is not None else '',
+                    link=_store_link.get('href') if _store_link is not None else ''
+                )
+            )
     return magazine_data
 
 def __scrape_interface() -> ItMagazineData:
@@ -134,11 +168,12 @@ def __scrape_interface() -> ItMagazineData:
     if tag_link is not None:
         tag_link = tag_link.find('a')
     if tag_link is not None:
-        _link = tag_link.get('href')
-    if _link is None:
+        _url = tag_link.get('href')
+    if _url is None:
         return magazine_data
     # scrape page
-    soup2 = __get_soup(_link)
+    magazine_data.url = _url
+    soup2 = __get_soup(_url)
     tag_salesinfo1 = soup2.find('div', class_='latest-info')
     if tag_salesinfo1 is not None:
         _number = tag_salesinfo1.find('h2')
@@ -151,6 +186,15 @@ def __scrape_interface() -> ItMagazineData:
         magazine_data.top_outlines.append(
             ItMagazineTopoutlineData(
                 title=tag_h3.get_text(strip=True) if tag_h3 is not None else ''
+            )
+        )
+
+    _store_link = tag_salesinfo1.find('img', title='書籍の購入')
+    if _store_link is not None:
+        magazine_data.store_links.append(
+            ItMagazineStoreLink(
+                name='CQ出版WebShop',
+                link=_store_link.parent.get('href') if _store_link is not None else ''
             )
         )
     return magazine_data
@@ -166,11 +210,12 @@ def __scrape_trangistor_gijutsu() -> ItMagazineData:
     if tag_link is not None:
         tag_link = tag_link.find('a')
     if tag_link is not None:
-        _link = tag_link.get('href')
-    if _link is None:
+        _url = tag_link.get('href')
+    if _url is None:
         return magazine_data
     # scrape page
-    soup2 = __get_soup(_link)
+    magazine_data.url = _url
+    soup2 = __get_soup(_url)
     tag_salesinfo1 = soup2.find('div', class_='latest-info')
     if tag_salesinfo1 is not None:
         _number = tag_salesinfo1.find('h2', class_='book-title')
@@ -186,6 +231,15 @@ def __scrape_trangistor_gijutsu() -> ItMagazineData:
             ItMagazineTopoutlineData(
                 category=_category.get_text(strip=True) if _category is not None else '',
                 title=_title.get_text(strip=True) if _title is not None else ''
+            )
+        )
+
+    _store_link = tag_salesinfo1.find('a', string='書籍の購入')
+    if _store_link is not None:
+        magazine_data.store_links.append(
+            ItMagazineStoreLink(
+                name='CQ出版WebShop',
+                link=_store_link.get('href') if _store_link is not None else ''
             )
         )
     return magazine_data
