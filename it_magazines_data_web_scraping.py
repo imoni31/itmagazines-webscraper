@@ -335,26 +335,34 @@ def __scrape_nikkei_linux():
 
 def scrape_magazine(magazine_type: ItMagazineType) -> ItMagazineData:
     '''
-    run web scraping
+    scrape magazine
     '''
+    print(f'{magazine_type.name} scraping ...', end='')
+    _magazine: ItMagazineData = None
     if magazine_type == ItMagazineType.SOFTWARE_DESIGN:
-        return __scrape_software_design()
-    if magazine_type == ItMagazineType.WEB_DB_PRESS:
-        return __scrape_web_db_press()
-    if magazine_type == ItMagazineType.INTERFACE:
-        return __scrape_interface()
-    if magazine_type == ItMagazineType.TRANGISTOR_GIJUTSU:
-        return __scrape_trangistor_gijutsu()
-    if magazine_type == ItMagazineType.NIKKEI_SOFTWARE:
-        return __scrape_nikkei_software()
-    if magazine_type == ItMagazineType.NIKKEI_LINUX:
-        return __scrape_nikkei_linux()
-    return None
+        _magazine = __scrape_software_design()
+    elif magazine_type == ItMagazineType.WEB_DB_PRESS:
+        _magazine = __scrape_web_db_press()
+    elif magazine_type == ItMagazineType.INTERFACE:
+        _magazine = __scrape_interface()
+    elif magazine_type == ItMagazineType.TRANGISTOR_GIJUTSU:
+        _magazine = __scrape_trangistor_gijutsu()
+    elif magazine_type == ItMagazineType.NIKKEI_SOFTWARE:
+        _magazine = __scrape_nikkei_software()
+    elif magazine_type == ItMagazineType.NIKKEI_LINUX:
+        _magazine = __scrape_nikkei_linux()
+    print('done')
+    return _magazine
+
+def scrape_magazines() -> list[ItMagazineData]:
+    '''
+    scrape magazines
+    '''
+    _magazines: list[ItMagazineData] = []
+    for magazine_type in ItMagazineType:
+        _magazines.append(scrape_magazine(magazine_type=magazine_type))
+    return _magazines
 
 if __name__ == '__main__':
-    print(scrape_magazine(ItMagazineType.SOFTWARE_DESIGN).get_json())
-    print(scrape_magazine(ItMagazineType.WEB_DB_PRESS).get_json())
-    print(scrape_magazine(ItMagazineType.INTERFACE).get_json())
-    print(scrape_magazine(ItMagazineType.TRANGISTOR_GIJUTSU).get_json())
-    print(scrape_magazine(ItMagazineType.NIKKEI_SOFTWARE).get_json())
-    print(scrape_magazine(ItMagazineType.NIKKEI_LINUX).get_json())
+    for magazine in scrape_magazines():
+        print(magazine.get_json())
