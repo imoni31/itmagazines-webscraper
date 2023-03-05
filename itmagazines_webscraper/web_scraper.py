@@ -6,6 +6,7 @@ import json
 import re
 from dataclasses import dataclass, field, asdict
 from enum import Enum
+from typing import List
 import requests
 from bs4 import BeautifulSoup, Tag
 
@@ -40,8 +41,8 @@ class ItMagazineData:
     number: str = ''
     price: str = ''
     url: str = ''
-    top_outlines: list[str] = field(default_factory=list)
-    store_links: list[ItMagazineStoreLink] = field(default_factory=list)
+    top_outlines: List[str] = field(default_factory=list)
+    store_links: List[ItMagazineStoreLink] = field(default_factory=list)
 
     def get_dict(self):
         '''
@@ -328,11 +329,11 @@ def scrape_magazine(magazine_type: ItMagazineType) -> ItMagazineData:
     print('done')
     return _magazine
 
-def scrape_magazines() -> list[ItMagazineData]:
+def scrape_magazines() -> List[ItMagazineData]:
     '''
     scrape magazines
     '''
-    _magazines: list[ItMagazineData] = []
+    _magazines: List[ItMagazineData] = []
     for magazine_type in ItMagazineType:
         _magazines.append(scrape_magazine(magazine_type=magazine_type))
     return _magazines
