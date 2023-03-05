@@ -20,7 +20,7 @@ class ItMagazineType(Enum):
     # CQ出版
     INTERFACE = 11
     TRANGISTOR_GIJUTSU = 12
-    # 日経
+    # 日経BP
     NIKKEI_SOFTWARE = 21
     NIKKEI_LINUX = 22
 
