@@ -1,5 +1,17 @@
 # itmagazines-webscraper
 
+## Support magazine list
+
+* 技術評論社
+    * Software Design
+    * WEB+DB PRESS
+* CQ出版
+    * Interface
+    * トランジスタ技術
+* 日経
+    * 日経ソフトウエア
+    * 日経Linux
+
 ## Installaction
 
 ```console
