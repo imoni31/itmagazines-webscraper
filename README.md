@@ -47,7 +47,8 @@ for magazine in scrape_magazines():
 {
   "name": "日経Linux",
   "number": "日経Linux20XX年X月号",
-  "price": "発行・発売日：20XX年X月X日 価格：XXXX円（本体XXXX円）",
+  "price": "XXXX円",
+  "release_date": "20XX年X月X日",
   "url": "https://info.nikkeibp.co.jp/media/LIN/",
   "top_outlines": [
     "【特集1】Linux学び直し",
@@ -72,13 +73,14 @@ for magazine in scrape_magazines():
 |------|-------|
 |name|Magazine name.|
 |number|Magazine name and volume number.|
-|price|Release date and price.|
-|url|URL of web page|
-|top_outlines|Magazine out line list.|
+|price|Price.|
+|pricrelease_datee|Release date.|
+|url|URL of web page.|
+|top_outlines|Magazine outline list.|
 |store_links|Store link list.|
 
 ### store_links
 |Detail|Summary|
 |------|-------|
 |name|Store name.|
-|link|URL of store web page.|
+|url|URL of store web page.|

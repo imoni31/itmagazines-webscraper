@@ -30,7 +30,7 @@ class ItMagazineStoreLink:
     IT-Magazine store-link data class
     '''
     name: str = ''
-    link: str = ''
+    url: str = ''
 
 @dataclass
 class ItMagazineData:
@@ -40,6 +40,7 @@ class ItMagazineData:
     name: str
     number: str = ''
     price: str = ''
+    release_date: str = ''
     url: str = ''
     top_outlines: List[str] = field(default_factory=list)
     store_links: List[ItMagazineStoreLink] = field(default_factory=list)
@@ -63,6 +64,33 @@ def __get_soup(url: str) -> BeautifulSoup:
     html = requests.get(url, timeout=(3.0, 10.0))
     return BeautifulSoup(html.content, 'html.parser')
 
+def __extract_date(_date: Tag) -> str:
+    if _date is None:
+        return ''
+    _date_str = _date.get_text(strip=True)
+    res = re.findall(r'\d{4}年\d{1,2}月\d{1,2}日', _date_str)
+    if len(res) > 0:
+        return res[0]
+    res = re.findall(r'\d{1,2}月\d{1,2}日', _date_str)
+    if len(res) > 0:
+        return res[0]
+    res = re.findall(r'\d{4}/\d{1,2}/\d{1,2}', _date_str)
+    if len(res) > 0:
+        return res[0]
+    return ''
+
+def __extract_price(_price: Tag) -> str:
+    if _price is None:
+        return ''
+    _price_str = _price.get_text(strip=True)
+    res = re.findall(r'\d{1,3},?\d{1,3}円', _price_str)
+    if len(res) > 0:
+        return res[0]
+    res = re.findall(r'[￥¥]\d{1,3},?\d{1,3}', _price_str)
+    if len(res) > 0:
+        return res[0]
+    return ''
+
 def __scrape_software_design():
     _url = 'http://gihyo.jp/magazine/SD'
     magazine_data = ItMagazineData(name='Software Design', url=_url)
@@ -77,10 +105,9 @@ def __scrape_software_design():
         tag_salesinfo2 = tag_salesinfo1.find('div', class_='information')
     if tag_salesinfo2 is not None:
         _release_date = tag_salesinfo2.find(string=re.compile('発売'))
+        magazine_data.release_date = __extract_date(_date=_release_date)
         _price = tag_salesinfo2.find(string=re.compile('定価'))
-        magazine_data.price =\
-            (_release_date.get_text(strip=True) + ' ' if _release_date is not None else '')\
-                + (_price.get_text(strip=True) if _price is not None else '')
+        magazine_data.price = __extract_price(_price=_price)
 
     tag_topoutline = soup.find('div', id='magazineTopOutline')
     if tag_topoutline is not None:
@@ -99,7 +126,7 @@ def __scrape_software_design():
             magazine_data.store_links.append(
                 ItMagazineStoreLink(
                     name=_store_link.get_text(strip=True) if _store_link is not None else '',
-                    link=_store_link.get('href') if _store_link is not None else ''
+                    url=_store_link.get('href') if _store_link is not None else ''
                 )
             )
     return magazine_data
@@ -118,10 +145,9 @@ def __scrape_web_db_press() -> ItMagazineData:
         tag_salesinfo2 = tag_salesinfo1.find('div', class_='information')
     if tag_salesinfo2 is not None:
         _release_date = tag_salesinfo2.find(string=re.compile('発売'))
+        magazine_data.release_date = __extract_date(_date=_release_date)
         _price = tag_salesinfo2.find(string=re.compile('定価'))
-        magazine_data.price =\
-            (_release_date.get_text(strip=True) + ' ' if _release_date is not None else '')\
-                + (_price.get_text(strip=True) if _price is not None else '')
+        magazine_data.price = __extract_price(_price=_price)
 
     tag_topoutline = soup.find('div', id='magazineTopOutline')
     if tag_topoutline is not None:
@@ -140,7 +166,7 @@ def __scrape_web_db_press() -> ItMagazineData:
             magazine_data.store_links.append(
                 ItMagazineStoreLink(
                     name=_store_link.get_text(strip=True) if _store_link is not None else '',
-                    link=_store_link.get('href') if _store_link is not None else ''
+                    url=_store_link.get('href') if _store_link is not None else ''
                 )
             )
     return magazine_data
@@ -166,7 +192,8 @@ def __scrape_interface() -> ItMagazineData:
         magazine_data.number\
             = _number.get_text(strip=True) if _number is not None else ''
         _price = tag_salesinfo1.find(class_='price')
-        magazine_data.price = _price.get_text(strip=True) if _price is not None else ''
+        magazine_data.release_date = __extract_date(_date=_price)
+        magazine_data.price = __extract_price(_price=_price)
 
     for tag_h3 in soup2.find_all('h3', class_='title01'):
         magazine_data.top_outlines.append(
@@ -178,7 +205,7 @@ def __scrape_interface() -> ItMagazineData:
         magazine_data.store_links.append(
             ItMagazineStoreLink(
                 name='CQ出版WebShop',
-                link=_store_link.parent.get('href') if _store_link is not None else ''
+                url=_store_link.parent.get('href') if _store_link is not None else ''
             )
         )
     return magazine_data
@@ -206,7 +233,8 @@ def __scrape_trangistor_gijutsu() -> ItMagazineData:
         magazine_data.number\
             = 'トランジスタ技術 ' + _number.get_text(strip=True) if _number is not None else ''
         _price = tag_salesinfo1.find('div', class_='issue-date')
-        magazine_data.price = _price.get_text(strip=True) if _price is not None else ''
+        magazine_data.release_date = __extract_date(_date=_price)
+        magazine_data.price = __extract_price(_price=_price)
 
     for tag_li in tag_salesinfo1.find_all('dl', class_=['tokushu', 'furoku']):
         _category = tag_li.find('dt')
@@ -221,7 +249,7 @@ def __scrape_trangistor_gijutsu() -> ItMagazineData:
         magazine_data.store_links.append(
             ItMagazineStoreLink(
                 name='CQ出版WebShop',
-                link=_store_link.get('href') if _store_link is not None else ''
+                url=_store_link.get('href') if _store_link is not None else ''
             )
         )
     return magazine_data
@@ -240,9 +268,8 @@ def __scrape_nikkei_software():
             = _number.get_text(strip=True).replace('最新号', '') if _number is not None else ''
         _release_date = tag_salesinfo1.find(string=re.compile('発売日'))
         _price = tag_salesinfo1.find(string=re.compile('価格'))
-        magazine_data.price = \
-            (_release_date.get_text(strip=True) + ' ' if _release_date is not None else '')\
-                + (_price.get_text(strip=True) if _price is not None else '')
+        magazine_data.release_date = __extract_date(_date=_release_date)
+        magazine_data.price = __extract_price(_price=_price)
 
         for tag_b in tag_salesinfo1.find_all('b', string='【特集】'):
             magazine_data.top_outlines.append(
@@ -254,7 +281,7 @@ def __scrape_nikkei_software():
             magazine_data.store_links.append(
                 ItMagazineStoreLink(
                     name='Amazon',
-                    link=_store_link.get('href')
+                    url=_store_link.get('href')
                 )
             )
         _store_link = tag_salesinfo1.find('a', href=re.compile('books.rakuten'))
@@ -262,7 +289,7 @@ def __scrape_nikkei_software():
             magazine_data.store_links.append(
                 ItMagazineStoreLink(
                     name='Rakutenブックス',
-                    link=_store_link.get('href')
+                    url=_store_link.get('href')
                 )
             )
     return magazine_data
@@ -281,9 +308,8 @@ def __scrape_nikkei_linux():
             = _number.get_text(strip=True).replace('最新号', '') if _number is not None else ''
         _release_date = tag_salesinfo1.find(string=re.compile('発売日'))
         _price = tag_salesinfo1.find(string=re.compile('価格'))
-        magazine_data.price = \
-            (_release_date.get_text(strip=True) + ' ' if _release_date is not None else '')\
-                + (_price.get_text(strip=True) if _price is not None else '')
+        magazine_data.release_date = __extract_date(_date=_release_date)
+        magazine_data.price = __extract_price(_price=_price)
 
         for tag_b in tag_salesinfo1.find_all('b', string=re.compile('【特集')):
             magazine_data.top_outlines.append(
@@ -295,7 +321,7 @@ def __scrape_nikkei_linux():
             magazine_data.store_links.append(
                 ItMagazineStoreLink(
                     name='Amazon',
-                    link=_store_link.get('href')
+                    url=_store_link.get('href')
                 )
             )
         _store_link = tag_salesinfo1.find('a', href=re.compile('books.rakuten'))
@@ -303,7 +329,7 @@ def __scrape_nikkei_linux():
             magazine_data.store_links.append(
                 ItMagazineStoreLink(
                     name='Rakutenブックス',
-                    link=_store_link.get('href')
+                    url=_store_link.get('href')
                 )
             )
     return magazine_data
