@@ -27,9 +27,10 @@ $ python -m pip install itmagazines-webscraper
 from pprint import pprint
 from itmagazines_webscraper import ItMagazineType, scrape_magazine
 
-magazine = scrape_magazine(ItMagazineType.SOFTWARE_DESIGN)
-pprint(magazine.get_dict())
-print(magazine.get_json())
+magazines = scrape_magazine(ItMagazineType.SOFTWARE_DESIGN)
+for magazine in magazines:
+    pprint(magazine.get_dict())
+    print(magazine.get_json())
 ```
 
 ### Execute all
@@ -37,7 +38,8 @@ print(magazine.get_json())
 from pprint import pprint
 from itmagazines_webscraper import scrape_magazines
 
-for magazine in scrape_magazines():
+magazines = scrape_magazines()
+for magazine in magazines:
     pprint(magazine.get_dict())
     print(magazine.get_json())
 ```
@@ -74,7 +76,7 @@ for magazine in scrape_magazines():
 |name|Magazine name.|
 |number|Magazine name and volume number.|
 |price|Price.|
-|pricrelease_datee|Release date.|
+|release_datee|Release date.|
 |url|URL of web page.|
 |top_outlines|Magazine outline list.|
 |store_links|Store link list.|

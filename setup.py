@@ -15,7 +15,7 @@ with open('README.md', 'r', encoding='utf-8') as f:
 
 setup(
     name='itmagazines-webscraper',
-    version='0.1.1',
+    version='0.1.0',
     description='WEB Scraper for IT-Magazines.',
     long_description=readme,
     long_description_content_type='text/markdown',
