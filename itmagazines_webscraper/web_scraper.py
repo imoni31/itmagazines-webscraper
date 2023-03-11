@@ -64,6 +64,18 @@ def __get_soup(url: str) -> BeautifulSoup:
     html = requests.get(url, timeout=(3.0, 10.0))
     return BeautifulSoup(html.content, 'html.parser')
 
+def __extract_magazine_number(_number: Tag) -> str:
+    if _number is None:
+        return ''
+    _num_str = _number.get_text(strip=True)
+    res = re.findall(r'\d{4}年\d{1,2}月号', _num_str)
+    if len(res) > 0:
+        return res[0]
+    res = re.findall(r'Vol.\d{3}', _num_str)
+    if len(res) > 0:
+        return res[0]
+    return ''
+
 def __extract_year(_date: Tag) -> str:
     if _date is None:
         return ''
@@ -120,9 +132,7 @@ def __scrape_software_design() -> List[ItMagazineData]:
         magazine_datas.append(magazine_data)
         soup2 = __get_soup(_url)
         _number = soup2.find('h1', string=re.compile('月号'))
-        magazine_data.number\
-            = _number.get_text(strip=True).replace(magazine_data.name, '').replace(' ', '')\
-                if _number is not None else ''
+        magazine_data.number = __extract_magazine_number(_number=_number)
         tag_salesinfo2 = soup2.find('div', id='publishedDetail')
         if tag_salesinfo2 is not None:
             tag_salesinfo2 = tag_salesinfo2.find('div', class_='information')
@@ -176,9 +186,7 @@ def __scrape_web_db_press() -> List[ItMagazineData]:
         magazine_datas.append(magazine_data)
         soup2 = __get_soup(_url)
         _number = soup2.find('h1', string=re.compile('Vol.'))
-        magazine_data.number\
-            = _number.get_text(strip=True).replace(magazine_data.name, '').replace(' ', '')\
-                if _number is not None else ''
+        magazine_data.number = __extract_magazine_number(_number=_number)
         tag_salesinfo2 = soup2.find('div', id='publishedDetail')
         if tag_salesinfo2 is not None:
             tag_salesinfo2 = tag_salesinfo2.find('div', class_='information')
@@ -241,10 +249,7 @@ def __scrape_interface() -> List[ItMagazineData]:
         tag_salesinfo1 = soup2.find('div', class_='latest-info')
         if tag_salesinfo1 is not None:
             _number = tag_salesinfo1.find('h2')
-            magazine_data.number\
-                = _number.get_text(strip=True)\
-                    .replace(magazine_data.name, '').replace('予告', '').replace(' ', '')\
-                    if _number is not None else ''
+            magazine_data.number = __extract_magazine_number(_number=_number)
             _price = tag_salesinfo1.find(class_='price')
             magazine_data.release_date\
                 = __extract_year(_date=_number) + __extract_date(_date=_price)
@@ -293,9 +298,7 @@ def __scrape_trangistor_gijutsu() -> List[ItMagazineData]:
     tag_salesinfo1 = soup2.find('div', class_='latest-info')
     if tag_salesinfo1 is not None:
         _number = tag_salesinfo1.find('h2', class_='book-title')
-        magazine_data.number\
-            = _number.get_text(strip=True).replace(magazine_data.name, '').replace(' ', '')\
-                  if _number is not None else ''
+        magazine_data.number = __extract_magazine_number(_number=_number)
         _price = tag_salesinfo1.find('div', class_='issue-date')
         magazine_data.release_date = __extract_date(_date=_price)
         magazine_data.price = __extract_price(_price=_price)
@@ -330,9 +333,7 @@ def __scrape_nikkei_software() -> List[ItMagazineData]:
         tag_salesinfo1 = tag_salesinfo1.find('div', class_='cover-txt')
     if tag_salesinfo1 is not None:
         _number = tag_salesinfo1.find('p', class_='Title')
-        magazine_data.number\
-            = _number.get_text(strip=True).replace(magazine_data.name, '').replace('最新号', '').replace(' ', '')\
-                  if _number is not None else ''
+        magazine_data.number = __extract_magazine_number(_number=_number)
         _release_date = tag_salesinfo1.find(string=re.compile('発売日'))
         _price = tag_salesinfo1.find(string=re.compile('価格'))
         magazine_data.release_date = __extract_date(_date=_release_date)
@@ -373,9 +374,7 @@ def __scrape_nikkei_linux() -> List[ItMagazineData]:
         tag_salesinfo1 = tag_salesinfo1.find('div', class_='cover-txt')
     if tag_salesinfo1 is not None:
         _number = tag_salesinfo1.find('p', class_='Title')
-        magazine_data.number\
-            = _number.get_text(strip=True).replace(magazine_data.name, '').replace('最新号', '').replace(' ', '')\
-                  if _number is not None else ''
+        magazine_data.number = __extract_magazine_number(_number=_number)
         _release_date = tag_salesinfo1.find(string=re.compile('発売日'))
         _price = tag_salesinfo1.find(string=re.compile('価格'))
         magazine_data.release_date = __extract_date(_date=_release_date)
