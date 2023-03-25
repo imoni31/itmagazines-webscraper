@@ -421,6 +421,17 @@ def scrape_magazine(magazine_type: ItMagazineType) -> List[ItMagazineData]:
         _magazines = __scrape_nikkei_software()
     elif magazine_type == ItMagazineType.NIKKEI_LINUX:
         _magazines = __scrape_nikkei_linux()
+    # check magazine number duplication
+    _rmv_list = []
+    for _magazine1 in _magazines:
+        for _magazine2 in _magazines:
+            if _magazine1 == _magazine2 or _magazine1 in _rmv_list:
+                continue
+            if _magazine1.name != _magazine2.name or _magazine1.number != _magazine2.number:
+                continue
+            _rmv_list.append(_magazine2)
+    for _rmv_item in _rmv_list:
+        _magazines.remove(_rmv_item)
     print('done')
     return _magazines
 
